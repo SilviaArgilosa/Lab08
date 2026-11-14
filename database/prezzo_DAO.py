@@ -39,3 +39,51 @@ class PrezzoDAO:
             cnx.close()
 
         return result
+
+    def get_prezzo_medio_mese(mese):
+        cnx = DBConnect.get_connection()
+        prezzo_medio = []
+        cursor = cnx.cursor()
+
+        query = """select d.nome, AVG(p.prezzo_litro)
+                   from distributore d, prezzo p
+                   where d.id = p.id_distributore and MONTH(p.data) = %s
+                   group by d.id, d.nome"""
+
+        try:
+            cursor.execute(query, (mese,)) #ogni riga del cursore è già una tupla
+            for row in cursor:
+                prezzo_medio.append(row)
+
+        except Exception as e:
+            print(f"Errore durante la query get_prezzi: {e}")
+            prezzo_medio = None
+        finally:
+            cursor.close()
+            cnx.close()
+
+        return prezzo_medio
+
+
+    def get_prezzi_primaSettimana(mese):
+        cnx = DBConnect.get_connection()
+        prezzi_Primasettimana = []
+        cursor = cnx.cursor()
+
+        query = """select d.id, d.nome, p.prezzo_litro
+                   from distributore d, prezzo p
+                   where d.id = p.id_distributore and MONTH(p.data)= %s and DAY(p.data) <= 7"""
+
+        try:
+            cursor.execute(query, (mese,))
+            for row in cursor:
+                prezzi_Primasettimana.append(row)
+
+        except Exception as e:
+            print(f"Errore durante la query get_prezzi: {e}")
+            prezzi_Primasettimana = None
+        finally:
+            cursor.close()
+            cnx.close()
+
+        return prezzi_Primasettimana
